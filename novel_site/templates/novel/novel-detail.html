@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}小说详情页{% endblock %}
+
+{% block content %}
+    <div class="row"
+         style="height: auto; width: auto; margin:20px 0; padding: 10px 0; background-color: white; border-radius: 10px;">
+        <div class=" col-sm-3">
+            <a href="{{ MEDIA_URL }}{{ novel.image_path }}" target="_blank">
+                <img src="{{ MEDIA_URL }}{{ novel.image_path }}" style="height: 380px; width: 260px;">
+            </a>
+        </div>
+        <div class="col-sm-9">
+            <h3>
+                {{ novel.novel_name }}
+                <a href="#">
+                    {% if has_fav %}
+                        <span class="glyphicon glyphicon-heart" id="id_fav" title="取消收藏" onclick="add_fav(this)"></span>
+                    {% else %}
+                        <span class="glyphicon glyphicon-heart-empty" id="id_fav" title="收藏" onclick="add_fav(this)"></span>
+                    {% endif %}
+                </a>
+            </h3>
+            <p>简介:<br>{{ novel.intro|safe }}</p>
+            <p>最新章节: <a
+                    href="{% url 'novel:chapter_detail' novel.id new_chapter.id %}">{{ new_chapter.chapter_name }}</a>
+            </p>
+            <a href="{% url 'novel:chapter_list' novel.id %}" class="btn btn-primary">开始阅读</a>
+        </div>
+    </div>
+
+    <div class="panel panel-primary" style="margin: 20px 0">
+        <div class="panel-heading">
+            <a href="{% url 'novel:category_detail' novel.category.id %}" class="panel-title pull-right"><small>查看更多>></small></a>
+            <h3 class="panel-title">相关小说推荐</h3>
+        </div>
+        <div class="row" style="padding: 5px;">
+            {% for relation_novel in relation_novels %}
+                <div class="col-sm-3">
+                    <div class="thumbnail">
+                        <a href="{% url 'novel:novel_detail' relation_novel.id %}">
+                            <img src="{{ MEDIA_URL }}{{ relation_novel.image_path }}"
+                                 alt="小说图片" style="height: 200px; width: auto;">
+                        </a>
+                        <div class="caption">
+                            <h4 class="text-center"><a
+                                    href="{% url 'novel:novel_detail' relation_novel.id %}">{{ relation_novel.novel_name }}</a>
+                            </h4>
+                            <span class="text-info">阅读次数: {{ relation_novel.read_nums }}</span>
+                            <span class="text-info pull-right">收藏人数: {{ relation_novel.fav_nums }}</span>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+        function add_fav() {
+            $.ajax({
+                cache: false,
+                type: "POST",
+                url: "{% url 'operation:add_fav' %}",
+                data: {
+                    novel_id: {{ novel.id }},
+                    csrfmiddlewaretoken: '{{ csrf_token }}'
+                },
+                async: true,
+                success: function (data) {
+                    if (data.status == "success") {
+                        var id_fav = $("#id_fav");
+                        if (data.msg == "add") {
+                            id_fav.attr("class", "glyphicon glyphicon-heart-empty");
+                        }
+                        else {
+                            id_fav.attr("class", "glyphicon glyphicon-heart");
+                        }
+                        location.reload();
+                    }
+                    else {
+                        alert(data.msg);
+                    }
+                }
+            });
+        }
+    </script>
+{% endblock %}

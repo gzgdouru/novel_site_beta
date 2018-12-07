@@ -1,0 +1,115 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+    <title>登录</title>
+    <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.bootcss.com/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+<body>
+<div class="container">
+    <div style="width: 30%;" class="center-block">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <a class="pull-right panel-title" href="{% url 'index' %}">
+                    <span class="glyphicon glyphicon-home"></span>
+                </a>
+                <h3 class="panel-title">账号登录</h3>
+            </div>
+            <div class="panel-body">
+                <form class="form-horizontal" role="form" action="{% url 'login' %}" method="post">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="user" class="col-xs-3 control-label">用户:</label>
+                        <div class="col-xs-9">
+                            <input type="text" class="form-control" id="user" name="username" placeholder="用户名称/邮箱/手机号码"
+                                   value="{{ login_form.username.value|default:'' }}" required>
+                        </div>
+                        <div style="color: red;">{{ login_form.username.errors }}</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password" class="col-xs-3 control-label">密码:</label>
+                        <div class="col-xs-9">
+                            <input type="password" class="form-control" id="password" name="password"
+                                   value="{{ login_form.password.value|default:'' }}" required>
+                        </div>
+                        <div style="color: red;">{{ login_form.password.errors }}</div>
+                    </div>
+
+
+                    <div class="form-group">
+                        <label for="password" class="col-xs-3 control-label">验证码:</label>
+                        <div class="col-xs-5">
+                            <input type="text" id="id_captcha_1" name="captcha_1"
+                                   class="form-control form-control-captcha fl" placeholder="验证码">
+                        </div>
+                        <div class="col-xs-4">
+                            <span>
+                                <a href="#" class="next-captcha">
+                                    <img src="{{ captcha.imgUrl }}" class="captcha" alt="captcha"></a>
+                            </span>
+                            <input id="id_captcha_0" name="captcha_0" type="hidden" value="{{ captcha.hashKey }}">
+                        </div>
+                        <div style="color: red;">{{ login_form.captcha.errors }}</div>
+                    </div>
+
+                    <div>
+                        <p class="text-right"><a href="{% url 'email_forget' %}">
+                            <small>忘记密码?</small>
+                        </a></p>
+                    </div>
+
+                    <div class="form-group">
+                        <input type="hidden" name="next" value="{{ next }}">
+                        <button type="submit" class="btn btn-default col-xs-12 text-center"
+                                style="background-color: lightgreen;">立刻登录>
+                        </button>
+                    </div>
+                </form>
+                {% if messages %}
+                    {% for msg in messages %}
+                        <p class="text-{{ msg.tags }}">{{ msg }}</p>
+                    {% endfor %}
+                {% endif %}
+                <p>第三方登陆：
+                    <span>
+                        <a href="{% url "social:begin" "github" %}?next={{ next }}">
+                            <img src="{% static 'images/github.jpg' %}" title="github" class="img-circle"
+                                 style="width: 30px; height: 30px;">
+                        </a>
+                    </span>
+                    <span>
+                        <a href="{% url "social:begin" "weibo" %}?next={{ next }}">
+                            <img src="{% static 'images/weibo.jpg' %}" title="微博" class="img-circle"
+                                 style="width: 30px; height: 30px;">
+                        </a>
+                    </span>
+                </p>
+                <p class="text-right">没有账号?<a href="{% url 'email_register' %}">[立刻注册]</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 刷新验证码
+    $(".next-captcha").click(function () {
+        $.getJSON("{% url 'refresh_captcha' %}", function (newCaptcha) {
+            var status = newCaptcha['status'];
+            var new_cptch_key = newCaptcha['new_cptch_key'];
+            var new_cptch_image = newCaptcha['new_cptch_image'];
+            id_captcha_0 = $("#id_captcha_0");
+            img = $(".captcha");
+            id_captcha_0.attr("value", new_cptch_key);
+            img.attr("src", new_cptch_image);
+        });
+
+    });
+
+</script>
+</body>
+</html>

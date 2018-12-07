@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}
+    小说列表
+{% endblock %}
+
+{% block content %}
+    {% for novel in novels.object_list %}
+        <div class="row"
+             style="height: auto; width: auto; margin:10px 0; padding: 10px 0; background-color: white; border-radius: 10px;">
+            <div class="col-sm-3">
+                <a href="{% url 'novel:novel_detail' novel.id %}">
+                    <img src="{{ MEDIA_URL }}{{ novel.image_path }}" style="height: 380px; width: 260px;">
+                </a>
+            </div>
+            <div class="col-sm-9">
+                <p>书名: <a href="{% url 'novel:novel_detail' novel.id %}">{{ novel.novel_name }}</a></p>
+                <p>分类: <a href="{% url 'novel:category_detail' novel.category.id %}">{{ novel.category.name }}</a></p>
+                <p>作者: <a href="{% url 'authors:authors_detail' novel.author.id %}">{{ novel.author.name }}</a></p>
+                <p>简介:<br> {{ novel.intro|safe }}</p>
+            </div>
+        </div>
+    {% endfor %}
+
+    <div class="text-center">
+        <ul class="pagination">
+            {% if novels.has_previous %}
+                <li><a href="?{{ novels.previous_page_number.querystring }}">上一页</a></li>
+            {% else %}
+                <li><span class="disabled prev">上一页</span></li>
+            {% endif %}
+
+            {% for page in novels.pages %}
+                {% if page %}
+                    {% ifequal page novels.number %}
+                        <li class="active"><span class="current page">{{ page }}</span></li>
+                    {% else %}
+                        <li><a href="?{{ page.querystring }}" class="page">{{ page }}</a></li>
+                    {% endifequal %}
+                {% else %}
+                    <li class="none"><a href="#">...</a></li>
+                {% endif %}
+            {% endfor %}
+
+            {% if novels.has_next %}
+                <li><a href="?{{ novels.next_page_number.querystring }}">下一页</a></li>
+            {% else %}
+                <li><span class="disabled next">下一页</span></li>
+            {% endif %}
+        </ul>
+    </div>
+
+{% endblock %}

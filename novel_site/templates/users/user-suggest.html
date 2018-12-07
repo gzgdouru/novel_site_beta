@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block title %}个人信息中心{% endblock %}
+
+{% block custom_js %}
+    <script type="text/javascript" src="{% static 'js/WdatePicker.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+    <div class="row" style="margin-top: 20px">
+        <div class="col-xs-2" style="padding-right: 20px;">
+            <ul class="nav nav-pills nav-stacked">
+                <li><a href="{% url 'users:info' %}">个人信息</a></li>
+                <li><a href="{% url 'users:favorite' %}">我的收藏</a></li>
+                <li class=""><a href="{% url 'users:message' %}">我的消息</a></li>
+                <li class="active"><a href="{% url 'users:message' %}">我的建议</a></li>
+            </ul>
+        </div>
+
+        <div class="col-xs-10">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <a href="#" class="panel-title pull-right" onclick="empty_suggest()">
+                        <small>清空</small>
+                    </a>
+                    <span class="panel-title">我的建议</span>
+                </div>
+                <table class="table">
+                    {% for user_suggest in user_suggests.object_list %}
+                        <tr>
+                            <td>
+                                <p>
+                                    <small style="color: lightgray;">{{ user_suggest.add_time }}</small>
+                                </p>
+                                <span class="pull-right"><a href="#" class="glyphicon glyphicon-trash pull-right"
+                                                            style="margin-right: 10px"
+                                                            onclick="remove_suggest({{ user_suggest.id }})"></a></span>
+                                {% if user_suggest.has_deal %}
+                                    <small class="pull-right text-success">已处理</small>
+                                {% else %}
+                                    <small class="pull-right text-danger">未处理</small>
+                                {% endif %}
+                                <p>{{ user_suggest.suggest }}</p>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </table>
+                <div class="text-center">
+                    <ul class="pagination">
+                        {% if user_suggests.has_previous %}
+                            <li><a href="?{{ user_suggests.previous_page_number.querystring }}">上一页</a></li>
+                        {% else %}
+                            <li><span class="disabled prev">上一页</span></li>
+                        {% endif %}
+
+                        {% for page in user_suggests.pages %}
+                            {% if page %}
+                                {% ifequal page user_suggests.number %}
+                                    <li class="active"><span class="current page">{{ page }}</span></li>
+                                {% else %}
+                                    <li><a href="?{{ page.querystring }}" class="page">{{ page }}</a></li>
+                                {% endifequal %}
+                            {% else %}
+                                <li class="none"><a href="#">...</a></li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if user_suggests.has_next %}
+                            <li><a href="?{{ user_suggests.next_page_number.querystring }}">下一页</a></li>
+                        {% else %}
+                            <li><span class="disabled next">下一页</span></li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function remove_suggest(suggestId) {
+            var returnValue = confirm("确定删除这条建议?");
+            if (!returnValue) {
+                return false;
+            }
+
+            $.ajax({
+                cache: false,
+                type: "POST",
+                url: "{% url 'users:user_suggest' %}",
+                data: {
+                    suggest_id: suggestId,
+                    csrfmiddlewaretoken: '{{ csrf_token }}'
+                },
+                async: true,
+                success: function (data) {
+                    if (data.status == "success") {
+                        location.reload();
+                    }
+                    else {
+                        alert(data.msg);
+                    }
+                }
+            });
+        }
+
+        function empty_suggest() {
+            var returnValue = confirm("确定清空用户建议?");
+            if (!returnValue) {
+                return false;
+            }
+
+            $.ajax({
+                cache: false,
+                type: "POST",
+                url: "{% url 'users:empty_suggest' %}",
+                data: {
+                    csrfmiddlewaretoken: '{{ csrf_token }}'
+                },
+                async: true,
+                success: function (data) {
+                    if (data.status == "success") {
+                        location.reload();
+                    }
+                    else {
+                        alert(data.msg);
+                    }
+                }
+            });
+        }
+    </script>
+{% endblock %}

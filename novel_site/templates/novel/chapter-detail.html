@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}
+    章节
+{% endblock %}
+
+{% block content %}
+    <div style="background-color: white; margin: 10px 0; padding: 10px 20px; border-radius: 10px;">
+        <div class="row">
+            <div class="col-xs-4 text-center">
+                <a href="{% url 'novel:chapter_detail' novel.id pre_chapter.id %}?sort={{ sortby }}&page={{ page }}">上一章</a>
+            </div>
+
+            <div class="col-xs-4 text-center">
+                <a href="{% url 'novel:chapter_list' novel.id %}?sort={{ sortby }}&page={{ page }}">目录</a>
+            </div>
+
+            <div class="col-xs-4 text-center">
+                <a href="{% url 'novel:chapter_detail' novel.id next_chapter.id %}?sort={{ sortby }}&page={{ page }}">下一章</a>
+            </div>
+        </div>
+
+        <div class="row" style="margin: 10px 0;">
+            <div class="page-header">
+                <h3 class="text-center">{{ chapter.chapter_name }}</h3>
+            </div>
+            {{ chapter_content|safe }}
+            <br>
+        </div>
+
+        <div class="row">
+            <div class="col-xs-4 text-center">
+                <a href="{% url 'novel:chapter_detail' novel.id pre_chapter.id %}?sort={{ sortby }}&page={{ page }}">上一章</a>
+            </div>
+
+            <div class="col-xs-4 text-center">
+                <a href="{% url 'novel:chapter_list' novel.id %}?sort={{ sortby }}&page={{ page }}">目录</a>
+            </div>
+
+            <div class="col-xs-4 text-center">
+                <a href="{% url 'novel:chapter_detail' novel.id next_chapter.id %}?sort={{ sortby }}&page={{ page }}">下一章</a>
+            </div>
+        </div>
+    </div>
+{% endblock %}
