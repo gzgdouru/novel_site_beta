@@ -16,6 +16,7 @@ Including another URLconf
 from django.conf.urls import url, include
 from django.contrib import admin
 from django.views.static import serve
+from rest_framework.documentation import include_docs_urls
 
 from novel.views import IndexView
 from novel_site.settings import MEDIA_ROOT
@@ -44,6 +45,8 @@ urlpatterns = [
     url(r'^users/', include("users.urls")),
     url(r'^operation/', include("operation.urls")),
     url(r'^api/v1/', include("api.urls")),
+    url(r'docs/', include_docs_urls(title="小说api")),
+
 
     #刷新验证码
     url(r'^refresh_captcha/$', RefreshCaptchaView.as_view(), name="refresh_captcha"),

@@ -61,6 +61,7 @@ DOWNLOADER_MIDDLEWARES = {
     'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': None,
     'novel_spider.middlewares.FilterDuplictionMiddlware': 1,
     'novel_spider.middlewares.CustomUserAgentMiddleware': 2,
+    'novel_spider.middlewares.ProxyMiddleware': 3,
     'novel_spider.middlewares.LogExceptionMiddleware': 120,
 }
 USER_AGENT_TYPE = "random"

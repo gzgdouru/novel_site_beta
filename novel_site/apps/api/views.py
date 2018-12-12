@@ -1,23 +1,24 @@
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django.db.models import Q
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import generics
 from rest_framework import filters
+from rest_framework.reverse import reverse
 import django_filters
 
 from novel.models import Novel, NovelCategory, NovelChapter
 from authors.models import Author
 from .serializers import NovelSerializer, CategorySerializer, AuthorSerializer
 from .serializers import ChapterSerializer
-from .filters import NovelFilter
+from .filters import NovelFilter, AuthorFilter, CatrgoryFilter
 from utils import chapterParser
 
 
 # Create your views here.
 class IndexView(APIView):
     def get(self, request):
-        return Response({'api': 'http://127.0.0.1:8000/api/v1/novel'})
+        return redirect("/docs/")
 
 
 class NovelListView(generics.ListAPIView):
@@ -84,7 +85,8 @@ class CategoryListView(generics.ListAPIView):
     queryset = NovelCategory.objects.all()
     serializer_class = CategorySerializer
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
-    filter_fields = ("name",)
+    filterset_class = CatrgoryFilter
+    # filter_fields = ("name",)
 
 
 class CategoryDetailView(generics.RetrieveAPIView):
@@ -98,7 +100,8 @@ class AuthorListView(generics.ListAPIView):
     queryset = Author.objects.all()
     serializer_class = AuthorSerializer
     filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
-    filter_fields = ("name",)
+    filterset_class = AuthorFilter
+    # filter_fields = ("name",)
 
 
 class AuthorDetailView(generics.RetrieveAPIView):

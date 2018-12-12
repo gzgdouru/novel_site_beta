@@ -19,10 +19,10 @@ from operation.models import UserFavorite, UserMessage, UserSuggest
 from novel.models import Novel
 from .forms import LoginForm, EmailRegisterForm, EmailResetForm, MobileRegisterForm, MobileForgetForm, \
     UserInfoForm, EmailForm, ModifyEmailForm, ModifyMobileForm, ModifyPasswordForm, ModifyAvatarForm
-from utils.emailVerify import send_email_code
+from utils.emailVerify import send_email_code, send_online_email_code
 from utils.mobileVerify import mobile_verify, send_mobile_code
 from utils.captchaTools import get_new_captcha
-from novel_site.settings import CUSTOM_USER_LOGIN_URL
+from novel_site.settings import CUSTOM_USER_LOGIN_URL, logger
 
 User = get_user_model()
 
@@ -70,8 +70,9 @@ class LoginView(View):
             else:
                 messages.add_message(request, messages.ERROR, "用户名或密码错误!")
         else:
-            errors = login_form.errors.as_json()
-            print(errors)
+            pass
+            # errors = login_form.errors.as_json()
+            # print(errors)
 
         return render(request, "users/login.html", context={
             "login_form": login_form,
@@ -116,7 +117,12 @@ class EmailRegisterView(View):
                     user.is_active = False
                     user.save()
 
-                    send_email_code(email)
+                err = send_online_email_code(email)
+                if err:
+                    logger.error("发送激活邮件给用户[{0}]失败, 原因:{1}".format(email, err))
+                    User.objects.filter(email=email).delete()
+                    return HttpResponse("用户激活邮件发送失败, 请稍后再试.")
+                logger.error("发送激活邮件给用户[{0}]成功.".format(email))
                 return HttpResponse("用户激活邮件已发送， 请前往邮箱激活后登陆.")
             else:
                 messages.add_message(request, messages.ERROR, "该邮箱已经注册！")
@@ -134,7 +140,7 @@ class AccountActiveView(View):
     '''
 
     def get(self, request, active_code):
-        record = EmailVerify.objects.filter(code=active_code, is_valid=True).first()
+        record = EmailVerify.objects.filter(code=active_code, is_valid=True).order_by("-add_time").first()
         if record:
             user = User.objects.get(email=record.email)
             user.is_active = True
@@ -162,7 +168,7 @@ class MobileRegisterView(View):
             mobile = request.POST.get("mobile")
             code = request.POST.get("code")
             password = request.POST.get("password")
-            record = MobileVerify.objects.filter(mobile=mobile, code=code, is_valid=True).first()
+            record = MobileVerify.objects.filter(mobile=mobile, code=code, is_valid=True).order_by("-add_time").first()
             if record:
                 diff_time = datetime.now() - record.add_time
                 if diff_time.seconds < 10 * 60:
@@ -209,7 +215,10 @@ class EmailForgetView(View):
         if forget_form.is_valid():
             email = request.POST.get("email")
             if UserProfile.objects.filter(email=email).exists():
-                send_email_code(email, "forget")
+                err = send_online_email_code(email, "forget")
+                if err:
+                    logger.error("发送密码重置邮件给用户[{0}]失败, 原因:{1}".format(email, err))
+                    return HttpResponse("邮件发送失败, 请稍后重试.")
                 return HttpResponse("邮件已发送, 请前往邮箱重置您的密码.")
             else:
                 messages.add_message(request, messages.ERROR, "该邮箱用户不存在!")
@@ -227,7 +236,8 @@ class EmailResetView(View):
     '''
 
     def get(self, request, active_code):
-        record = EmailVerify.objects.filter(code=active_code, is_valid=True, send_type="forget").first()
+        record = EmailVerify.objects.filter(code=active_code, is_valid=True, send_type="forget").order_by(
+            "-add_time").first()
         if record:
             email = record.email
             return render(request, "users/email-password-reset.html", context={
@@ -275,7 +285,8 @@ class MobileForgetView(View):
             code = request.POST.get("code")
             password = request.POST.get("password")
             confirm_password = request.POST.get("confirm_password")
-            record = MobileVerify.objects.filter(mobile=mobile, code=code, verify_type="forget", is_valid=True).first()
+            record = MobileVerify.objects.filter(mobile=mobile, code=code, verify_type="forget",
+                                                 is_valid=True).order_by("-add_time").first()
             if record:
                 diff_time = datetime.now() - record.add_time
                 if diff_time.total_seconds() <= record.valid_time * 60:
@@ -357,9 +368,11 @@ class ModifyEmailView(LoginRequiredMixin, View):
         if modify_form.is_valid():
             email = request.POST.get("email")
             code = request.POST.get("code")
-            record = EmailVerify.objects.filter(email=email, code=code, send_type="modify", is_valid=True).first()
+            record = EmailVerify.objects.filter(email=email, code=code, send_type="modify", is_valid=True).order_by(
+                "-add_time").first()
             if record:
-                UserProfile.objects.filter(username=request.user.username, email=request.user.email).update(email=email)
+                UserProfile.objects.filter(username=request.user.username, email=request.user.email).update(email=email,
+                                                                                                            username=email)
                 record.is_valid = False
                 record.save()
                 data["status"] = "success"
@@ -384,12 +397,13 @@ class ModifyMobileView(LoginRequiredMixin, View):
         if modify_form.is_valid():
             mobile = request.POST.get("mobile")
             code = request.POST.get("code")
-            record = MobileVerify.objects.filter(mobile=mobile, code=code, verify_type="modify", is_valid=True).first()
+            record = MobileVerify.objects.filter(mobile=mobile, code=code, verify_type="modify",
+                                                 is_valid=True).order_by("-add_time").first()
             if record:
                 diff_time = datetime.now() - record.add_time
                 if diff_time.total_seconds() <= record.valid_time * 60:
                     UserProfile.objects.filter(username=request.user.username, mobile=request.user.mobile).update(
-                        mobile=mobile)
+                        mobile=mobile, username=mobile)
                     record.is_valid = False
                     record.save()
                     data["status"] = "success"

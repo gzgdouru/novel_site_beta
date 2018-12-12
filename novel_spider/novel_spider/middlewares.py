@@ -9,8 +9,9 @@ from scrapy import signals
 from scrapy.exceptions import IgnoreRequest
 from scrapy.http import Response
 from fake_useragent import UserAgent
+from peewee import fn
 
-from .models import Novel, Chapter
+from .models import Novel, Chapter, Proxys
 
 
 class SiteCrawlerSpiderMiddleware(object):
@@ -137,7 +138,7 @@ class FilterDuplictionMiddlware(object):
     def process_request(self, request, spider):
         if Novel.select().where(Novel.url == request.url).exists() or \
                 Chapter.select().where(Chapter.chapter_url == request.url).exists():
-            spider.logger("过滤重复的url:{0}".format(request.url))
+            spider.logger.info("过滤重复的url:{0}".format(request.url))
             raise IgnoreRequest("重复的url:{0}".format(request.url))
 
 
@@ -158,3 +159,22 @@ class LogExceptionMiddleware(object):
 
     def process_exception(self, request, exception, spider):
         spider.logger.error("process url:{0}失败, 原因:{1}".format(request.url, exception))
+
+
+class ProxyMiddleware(object):
+    def __init__(self, crawl):
+        self.crawl = crawl
+        self.use_proxy = crawl.settings.get("USE_PROXY")
+
+    @classmethod
+    def from_crawler(cls, crawler):
+        # This method is used by Scrapy to create your spiders.
+        s = cls(crawler)
+        return s
+
+    def process_request(self, request, spider):
+        if self.use_proxy:
+            proxy = Proxys.select().order_by(fn.Rand()).limit(1)
+            if proxy:
+                ip = "http://{ip}:{port}".format(ip=proxy.ip, port=proxy.port)
+                request.meta["proxy"] = ip

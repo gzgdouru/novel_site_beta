@@ -11,7 +11,7 @@ db = peewee.MySQLDatabase(database="novel_site_beta",
 class Author(peewee.Model):
     name = peewee.CharField(max_length=32, verbose_name="名称", unique=True)
     intro = peewee.TextField(verbose_name="简介", default="")
-    image_path = peewee.CharField( max_length=200, verbose_name="图片路径", default="default_author.jpg", null=True)
+    image_path = peewee.CharField(max_length=200, verbose_name="图片路径", default="default_author.jpg", null=True)
     add_time = peewee.DateTimeField(default=datetime.now, verbose_name="添加时间")
 
     class Meta:
@@ -59,3 +59,26 @@ class Chapter(peewee.Model):
     class Meta:
         database = db
         table_name = 'tb_novel_chapter'
+
+
+class Proxys(peewee.Model):
+    ip = peewee.CharField(max_length=16)
+    port = peewee.IntegerField()
+    types = peewee.IntegerField()
+    protocol = peewee.IntegerField()
+    country = peewee.CharField(max_length=100)
+    area = peewee.CharField(max_length=100)
+    updatetime = peewee.DateTimeField(null=True)
+    speed = peewee.DecimalField(max_digits=5, decimal_places=2)
+    score = peewee.IntegerField()
+
+    class Meta:
+        database = db
+        table_name = 'proxys'
+
+if __name__ == "__main__":
+    proxy = Proxys.select().order_by(peewee.fn.Rand()).limit(1)
+    if proxy:
+        print(proxy.ip)
+    else:
+        print("No object!")

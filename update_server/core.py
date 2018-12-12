@@ -3,6 +3,7 @@ import logging
 import peewee_async
 
 import settings
+from emailManager import EmailManager
 
 _db = peewee_async.MySQLDatabase(database=settings.DB_NAME,
                                  host=settings.DB_HOST, port=settings.DB_PORT,
@@ -23,6 +24,12 @@ if settings.LOG_FILE:
     fHandle.setFormatter(logging.Formatter(settings.LOG_FORMATTER))
     _logger.addHandler(fHandle)
 
+_emailManager = EmailManager(host=settings.EMAIL_HOST,
+                             port=settings.EMAIL_PORT,
+                             user=settings.EMAIL_HOST_USER,
+                             password=settings.EMAIL_HOST_PASSWORD,
+                             charset=settings.EMAIL_CHARSET)
+
 
 def get_database():
     return _db
@@ -31,7 +38,10 @@ def get_database():
 def get_database_manager():
     return _objects
 
+
 def get_logger():
     return _logger
 
 
+def get_email_manager():
+    return _emailManager

@@ -6,7 +6,7 @@ from datetime import datetime
 
 
 class Author(models.Model):
-    name = models.CharField(max_length=32, verbose_name="名称", unique=True)
+    name = models.CharField(max_length=32, verbose_name="名称", unique=True, help_text="作者名称")
     intro = models.TextField(verbose_name="简介", default="")
     image_path = models.ImageField(upload_to="", max_length=200, verbose_name="图片路径", default="default_author.jpg", null=True, blank=True)
     add_time = models.DateTimeField(auto_now_add=True, verbose_name="添加时间")

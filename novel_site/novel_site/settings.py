@@ -198,6 +198,7 @@ MESSAGE_TAGS = {
     messages.ERROR: "danger",
 }
 
+# 邮件设置
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_USE_TLS = False  # 是否使用TLS安全传输协议(用于在两个通信应用程序之间提供保密性和数据完整性。)
 EMAIL_USE_SSL = True  # 是否使用SSL加密，qq企业邮箱要求使用
@@ -205,6 +206,11 @@ EMAIL_HOST = 'smtp.163.com'  # 发送邮件的邮箱 的 SMTP服务器，这里�
 EMAIL_PORT = 465
 EMAIL_HOST_USER = "anjubaoouru@163.com"
 EMAIL_HOST_PASSWORD = "qq5201314ouru"
+
+# 线上邮件设置
+ONLINE_EMAIL_URL = r'https://api.mysubmail.com/mail/xsend'
+ONLINE_EMAIL_APPID = "13955"
+ONLINE_EMAIL_APPKEY = "2d21d55a5bdc018fbf7123544264dd9b"
 
 # 自定义变量
 CUSTOM_USER_LOGIN_URL = "/login"

@@ -27,9 +27,9 @@ class BiqugeSpider(CrawlSpider):
             'novel_spider.pipelines.SaveItemPipeline': 4,
             'novel_spider.pipelines.LogComplatePipeline': 120,
         },
-
         "IMAGES_STORE": "/home/ouru/novel_site_beta/novel_site/media",
         "IMAGES_URLS_FIELD": "image_url",
+        "USE_PROXY": True,
     }
 
     rules = (
