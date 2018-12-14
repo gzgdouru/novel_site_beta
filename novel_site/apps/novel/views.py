@@ -40,6 +40,10 @@ class NovelListView(View):
     def get(self, request):
         all_novels = Novel.objects.filter(enable=True)
 
+        keyword = request.GET.get("search", "")
+        if keyword:
+            all_novels = all_novels.filter(Q(novel_name__icontains=keyword) | Q(author__name__icontains=keyword))
+
         try:
             page = request.GET.get('page', 1)
         except PageNotAnInteger:
@@ -188,22 +192,3 @@ class CategoryDetailView(View):
         })
 
 
-class SearchView(View):
-    '''
-    小说搜索
-    '''
-
-    def post(self, request):
-        keyword = request.POST.get("keyword", "")
-        all_novels = Novel.objects.filter(Q(novel_name__icontains=keyword) | Q(author__name__icontains=keyword))
-
-        try:
-            page = request.GET.get('page', 1)
-        except PageNotAnInteger:
-            page = 1
-        p = Paginator(all_novels, 5, request=request)
-        novels = p.page(page)
-
-        return render(request, "novel/novel-list.html", context={
-            "novels": novels,
-        })

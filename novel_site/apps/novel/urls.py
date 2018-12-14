@@ -1,6 +1,6 @@
 from django.conf.urls import url
 from django.views.decorators.cache import cache_page
-from .views import CategoryListView, CategoryDetailView, SearchView, NovelListView, NovelDetaiView, \
+from .views import CategoryListView, CategoryDetailView, NovelListView, NovelDetaiView, \
     ChapterListView, ChapterDetailView
 
 app_name = "novel"
@@ -12,5 +12,4 @@ urlpatterns = [
     url(r'^chapter/detail/(?P<chapter_id>\d+)/$',ChapterDetailView.as_view(), name="chapter_detail"),
     url(r'^category/$', CategoryListView.as_view(), name="category_list"),
     url(r'^category/(?P<category_id>\d+)/$', CategoryDetailView.as_view(), name="category_detail"),
-    url(r'^search/$', SearchView.as_view(), name="search"),
 ]
