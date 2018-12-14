@@ -8,7 +8,7 @@
     <div style="background-color: white; margin: 10px 0; padding: 10px 20px; border-radius: 10px;">
         <div class="row">
             <div class="col-xs-4 text-center">
-                <a href="{% url 'novel:chapter_detail' novel.id pre_chapter.id %}?sort={{ sortby }}&page={{ page }}">上一章</a>
+                <a href="{% url 'novel:chapter_detail' pre_chapter.id %}?sort={{ sortby }}&page={{ page }}">上一章</a>
             </div>
 
             <div class="col-xs-4 text-center">
@@ -16,7 +16,7 @@
             </div>
 
             <div class="col-xs-4 text-center">
-                <a href="{% url 'novel:chapter_detail' novel.id next_chapter.id %}?sort={{ sortby }}&page={{ page }}">下一章</a>
+                <a href="{% url 'novel:chapter_detail' next_chapter.id %}?sort={{ sortby }}&page={{ page }}">下一章</a>
             </div>
         </div>
 
@@ -30,7 +30,7 @@
 
         <div class="row">
             <div class="col-xs-4 text-center">
-                <a href="{% url 'novel:chapter_detail' novel.id pre_chapter.id %}?sort={{ sortby }}&page={{ page }}">上一章</a>
+                <a href="{% url 'novel:chapter_detail' pre_chapter.id %}?sort={{ sortby }}&page={{ page }}">上一章</a>
             </div>
 
             <div class="col-xs-4 text-center">
@@ -38,7 +38,7 @@
             </div>
 
             <div class="col-xs-4 text-center">
-                <a href="{% url 'novel:chapter_detail' novel.id next_chapter.id %}?sort={{ sortby }}&page={{ page }}">下一章</a>
+                <a href="{% url 'novel:chapter_detail' next_chapter.id %}?sort={{ sortby }}&page={{ page }}">下一章</a>
             </div>
         </div>
     </div>
