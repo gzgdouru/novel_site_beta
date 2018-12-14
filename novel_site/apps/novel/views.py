@@ -117,24 +117,27 @@ class ChapterDetailView(View):
     章节详情
     '''
 
-    def get(self, request, novel_id, chapter_id):
-        novelObj = get_object_or_404(Novel, pk=novel_id)
+    def get(self, request, chapter_id):
         chapterObj = get_object_or_404(NovelChapter, pk=chapter_id)
+        novelObj = get_object_or_404(Novel, pk=chapterObj.novel_id)
         sortby = request.GET.get("sort", "")
         page = request.GET.get("page", 1)
 
         # 取上一章节
-        pre_chapter = NovelChapter.objects.filter(novel_id=int(novel_id),
+        pre_chapter = NovelChapter.objects.filter(novel_id=novelObj.id,
                                                   chapter_index__lt=chapterObj.chapter_index).order_by(
             "-chapter_index").first()
-        if not pre_chapter: pre_chapter = chapterObj
+        if not pre_chapter:
+            pre_chapter = chapterObj
 
         # 取下一章节
-        next_chapter = NovelChapter.objects.filter(novel_id=int(novel_id),
+        next_chapter = NovelChapter.objects.filter(novel_id=novelObj.id,
                                                    chapter_index__gt=chapterObj.chapter_index).order_by(
             "chapter_index").first()
-        if not next_chapter: next_chapter = chapterObj
+        if not next_chapter:
+            next_chapter = chapterObj
 
+        #解析小说内容
         try:
             get_chapter_content = getattr(chapterParser, novelObj.spider_name)
             content = get_chapter_content(chapterObj.chapter_url)
