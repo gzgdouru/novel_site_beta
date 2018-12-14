@@ -17,7 +17,7 @@
             <tr>
                 {% for new_chapter in new_chapters %}
                     <td style="background-color: white;"><a
-                            href="{% url 'novel:chapter_detail' novel.id new_chapter.id %}?sort={{ sortby }}">{{ new_chapter.chapter_name }}</a>
+                            href="{% url 'novel:chapter_detail' new_chapter.id %}?sort={{ sortby }}">{{ new_chapter.chapter_name }}</a>
                     </td>
                     {% if forloop.counter|divisibleby:4 %}
                         </tr>
@@ -44,7 +44,7 @@
             <tr>
                 {% for chapter in chapters.object_list %}
                     <td style="background-color: white;"><a
-                            href="{% url 'novel:chapter_detail' novel.id chapter.id %}?sort={{ sortby }}&page={{ page }}">{{ chapter.chapter_name }}</a>
+                            href="{% url 'novel:chapter_detail' chapter.id %}?sort={{ sortby }}&page={{ page }}">{{ chapter.chapter_name }}</a>
                     </td>
                     {% if forloop.counter|divisibleby:4 %}
                         </tr>

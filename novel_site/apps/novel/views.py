@@ -1,9 +1,12 @@
 import time
+import tempfile
 
 from django.shortcuts import render, get_object_or_404, Http404
 from django.views.generic import View
 from django.db.models import Q
 from pure_pagination import Paginator, EmptyPage, PageNotAnInteger
+from django.http import FileResponse, HttpResponse, StreamingHttpResponse
+from w3lib.html import remove_tags
 
 from .models import Novel, NovelCategory, NovelChapter
 from .forms import SearchForm
@@ -141,7 +144,7 @@ class ChapterDetailView(View):
         if not next_chapter:
             next_chapter = chapterObj
 
-        #解析小说内容
+        # 解析小说内容
         try:
             get_chapter_content = getattr(chapterParser, novelObj.spider_name)
             content = get_chapter_content(chapterObj.chapter_url)
@@ -192,3 +195,22 @@ class CategoryDetailView(View):
         })
 
 
+class NovelDownloadView(View):
+    def get(self, request, novel_id):
+        novel = get_object_or_404(Novel, pk=novel_id)
+        chapters = NovelChapter.objects.filter(novel=novel)
+        get_chapter_content = getattr(chapterParser, novel.spider_name)
+        f = tempfile.TemporaryFile()
+        for chapter in chapters:
+            try:
+                content = get_chapter_content(chapter.chapter_url)
+                content = "{0}\n{1}\n".format(chapter.chapter_name, remove_tags(content))
+                f.write(content.encode("utf-8"))
+            except Exception as e:
+                raise Http404(e)
+        f.seek(0)
+        response = FileResponse(f.read())
+        response['Content-Type'] = 'application/octet-stream'
+        response['Content-Disposition'] = 'attachment;filename="{0}.txt"'.format(novel.novel_name)
+        f.close()
+        return response

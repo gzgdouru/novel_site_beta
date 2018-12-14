@@ -25,6 +25,9 @@
             <p>最新章节: <a
                     href="{% url 'novel:chapter_detail' new_chapter.id %}">{{ new_chapter.chapter_name }}</a>
             </p>
+            <p>下载:
+                <a href="{% url 'novel:novel_download' novel.id %}">txt</a>
+            </p>
             <a href="{% url 'novel:chapter_list' novel.id %}" class="btn btn-primary">开始阅读</a>
         </div>
     </div>
