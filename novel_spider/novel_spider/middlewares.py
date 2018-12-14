@@ -138,7 +138,6 @@ class FilterDuplictionMiddlware(object):
     def process_request(self, request, spider):
         if Novel.select().where(Novel.url == request.url).exists() or \
                 Chapter.select().where(Chapter.chapter_url == request.url).exists():
-            spider.logger.info("过滤重复的url:{0}".format(request.url))
             raise IgnoreRequest("重复的url:{0}".format(request.url))
 
 

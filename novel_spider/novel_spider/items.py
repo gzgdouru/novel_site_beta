@@ -9,8 +9,7 @@ import scrapy
 from scrapy.loader.processors import TakeFirst, MapCompose, Join, Identity
 from scrapy_djangoitem import DjangoItem
 
-from novel_spider.utils.biquge_utils import get_category_by_biquge, get_author_by_biquge, get_chapter_index_by_biquge, \
-    novel_is_exists, chapter_is_exists
+from novel_spider.utils.biquge_utils import get_chapter_index_by_biquge
 from novel_spider.models import Novel, Category, Chapter, Author
 
 
@@ -28,7 +27,7 @@ class NovelItem(scrapy.Item):
     image_url = scrapy.Field()
     image_path = scrapy.Field()
     author = scrapy.Field(output_processor=TakeFirst())
-    category = scrapy.Field(input_processor=MapCompose(get_category_by_biquge), output_processor=Join(""))
+    category = scrapy.Field(output_processor=TakeFirst())
     intro = scrapy.Field(output_processor=TakeFirst())
 
     def save_item(self):
@@ -67,18 +66,18 @@ class NovelItem(scrapy.Item):
 class ChapterItem(scrapy.Item):
     novel_name = scrapy.Field(output_processor=TakeFirst())
     url = scrapy.Field(output_processor=TakeFirst())
-    index = scrapy.Field(input_processor=MapCompose(get_chapter_index_by_biquge), output_processor=TakeFirst())
+    index = scrapy.Field(output_processor=TakeFirst())
     name = scrapy.Field(output_processor=TakeFirst())
     author_name = scrapy.Field(output_processor=TakeFirst())
 
     def save_item(self):
         author = Author.select().where(Author.name == self.get("author_name")).first()
         if not author:
-            return "保存章节[{0}]失败, 原因:小说作者{1}不存在!".format(self.get("name"), self.get("author_name"))
+            return "保存章节[{0}]失败, 原因:小说作者[{1}]不存在!".format(self.get("name"), self.get("author_name"))
 
         novel = Novel.select().where((Novel.novel_name == self.get("novel_name")) & (Novel.author == author)).first()
         if not novel:
-            return "保存章节[{0}]失败, 原因:小说{1}不存在!".format(self.get("name"), self.get("novel_name"))
+            return "保存章节[{0}]失败, 原因:小说[{1}]不存在!".format(self.get("name"), self.get("novel_name"))
 
         chapter = Chapter()
         chapter.novel = novel

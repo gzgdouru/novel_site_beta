@@ -69,3 +69,25 @@ class LogComplatePipeline(object):
     def process_item(self, item, spider):
         spider.logger.info("process url:{0} finish.".format(item["url"]))
         return item
+
+
+class RestrictionPipeline(object):
+    def __init__(self, crawler):
+        self.crawler = crawler
+        self.ignore_novel = crawler.settings.get("IGNORE_NOVEL")
+        self.retain_novel = crawler.settings.get("RETAIN_NOVEL")
+
+    @classmethod
+    def from_crawler(cls, crawler):
+        return cls(crawler)
+
+    def process_item(self, item, spider):
+        novel_name = item.get("novel_name")
+        if novel_name:
+            if self.ignore_novel and novel_name in self.ignore_novel:
+                raise DropItem("过滤[{0}], 原因:满足小说忽略规则.".format(item))
+
+            if self.retain_novel and novel_name not in self.retain_novel:
+                raise DropItem("过滤[{0}], 原因:不满足小说保留规则.".format(item))
+
+        return item

@@ -74,9 +74,16 @@ USER_AGENT_TYPE = "random"
 
 # Configure item pipelines
 # See https://doc.scrapy.org/en/latest/topics/item-pipeline.html
-# ITEM_PIPELINES = {
-#    'novel_spider.pipelines.SiteCrawlerPipeline': 300,
-# }
+ITEM_PIPELINES = {
+    # 'novel_spider.pipelines.SiteCrawlerPipeline': 300,
+    'novel_spider.pipelines.RestrictionPipeline': 1,
+    'novel_spider.pipelines.NovelImagePipeline': 2,
+    'novel_spider.pipelines.SaveItemPipeline': 4,
+    'novel_spider.pipelines.LogComplatePipeline': 120,
+}
+
+IMAGES_STORE = "/home/ouru/novel_site_beta/novel_site/media"
+IMAGES_URLS_FIELD = "image_url"
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://doc.scrapy.org/en/latest/topics/autothrottle.html

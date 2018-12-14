@@ -32,12 +32,12 @@ class NovelListView(generics.ListAPIView):
     # search_fields = ("novel_name", "author__name")
 
 
-class NovelCategoryView(generics.GenericAPIView):
-    '''获取分类的所有小说'''
+class CategoryAllNovelView(generics.ListAPIView):
+    '''获取分类下的所有小说'''
     serializer_class = NovelSerializer
 
-    def get(self, request, category_id):
-        self.category_id = category_id
+    def get(self, request, *args, **kwargs):
+        self.category_id = kwargs.get("category_id")
         queryset = self.get_queryset()
 
         page = self.paginate_queryset(queryset)
@@ -50,15 +50,15 @@ class NovelCategoryView(generics.GenericAPIView):
 
     def get_queryset(self):
         category = get_object_or_404(NovelCategory, pk=self.category_id)
-        return Novel.objects.filter(category=category)
+        return category.novel_set.all()
 
 
-class NovelAuthorView(generics.GenericAPIView):
+class AuthorAllNovelView(generics.ListAPIView):
     '''获取作者的所有小说'''
     serializer_class = NovelSerializer
 
-    def get(self, request, author_id):
-        self.author_id = author_id
+    def get(self, request, *args, **kwargs):
+        self.author_id = kwargs.get("author_id")
         queryset = self.get_queryset()
 
         page = self.paginate_queryset(queryset)
@@ -71,7 +71,8 @@ class NovelAuthorView(generics.GenericAPIView):
 
     def get_queryset(self):
         author = get_object_or_404(Author, pk=self.author_id)
-        return Novel.objects.filter(author=author)
+        return author.novel_set.all()
+        # return Novel.objects.filter(author=author)
 
 
 class NovelDetailView(generics.RetrieveAPIView):
@@ -110,12 +111,12 @@ class AuthorDetailView(generics.RetrieveAPIView):
     serializer_class = AuthorSerializer
 
 
-class ChapterListView(generics.GenericAPIView):
+class ChapterListView(generics.ListAPIView):
     '''获取小说的章节列表'''
     serializer_class = ChapterSerializer
 
-    def get(self, request, novel_id):
-        self.novel_id = novel_id
+    def get(self, request, *args, **kwargs):
+        self.novel_id = kwargs.get("novel_id")
         queryset = self.get_queryset()
 
         page = self.paginate_queryset(queryset)
@@ -128,27 +129,24 @@ class ChapterListView(generics.GenericAPIView):
 
     def get_queryset(self):
         novel = Novel.objects.filter(pk=self.novel_id).first()
-        chapters = NovelChapter.objects.filter(novel=novel).values("id", "chapter_index", "chapter_name")
+        chapters = NovelChapter.objects.filter(novel=novel).values("id", "chapter_index", "chapter_name").order_by(
+            "chapter_index")
         return chapters
 
 
-class ChapterContentView(generics.RetrieveAPIView):
+class ChapterDetailView(generics.RetrieveAPIView):
     '''获取章节内容'''
+    queryset = NovelChapter.objects.all()
     serializer_class = ChapterSerializer
 
     def get(self, request, *args, **kwargs):
-        self.chapter_id = kwargs.get("chapter_id")
         instance = self.get_object()
         serializer = self.get_serializer(instance)
 
-        novel_id = kwargs.get("novel_id")
-        novel = get_object_or_404(Novel, pk=novel_id)
+        novel = get_object_or_404(Novel, pk=instance.novel_id)
         get_chapter_content = getattr(chapterParser, novel.spider_name)
         chapter_content = get_chapter_content(instance.chapter_url)
 
         re_dict = serializer.data
         re_dict["chapter_content"] = chapter_content
         return Response(re_dict)
-
-    def get_object(self):
-        return get_object_or_404(NovelChapter, pk=self.chapter_id)

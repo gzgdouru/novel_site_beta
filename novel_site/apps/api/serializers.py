@@ -31,3 +31,5 @@ class NovelSerializer(serializers.ModelSerializer):
         fields = (
         "id", "novel_name", "site_name", "image_path", "intro", "read_nums", "fav_nums", "enable", "is_end", "category",
         "author")
+
+

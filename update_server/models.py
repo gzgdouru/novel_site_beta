@@ -119,3 +119,17 @@ class Proxys(peewee.Model):
     class Meta:
         database = get_database()
         table_name = 'proxys'
+
+
+if __name__ == "__main__":
+    from peewee import fn
+    from core import get_database_manager
+    objects = get_database_manager()
+    async def test():
+        proxy = await objects.execute(Proxys.select().where(Proxys.score > 0).order_by(fn.Rand()).limit(1))
+        print(proxy[0].ip)
+
+    import asyncio
+    loop = asyncio.get_event_loop()
+    loop.create_task(test())
+    loop.run_forever()

@@ -59,7 +59,7 @@ def parse_chapter(html, novel_name):
         name = selector.css(".bookname h1::text").extract_first().strip()
         return name
     except Exception as e:
-        logger.error("(biquge)解析小说[{0}]章节失败, 原因:{1}".format(novel_name, e))
+        logger.error("(dingdian)解析小说[{0}]章节失败, 原因:{1}".format(novel_name, e))
 
 
 def parse_novel(html, novel_name):
@@ -68,5 +68,5 @@ def parse_novel(html, novel_name):
         urls = selector.css("#list dl dd a::attr(href)").extract()
         yield from urls
     except Exception as e:
-        logger.error("(biquge)解析小说[{0}]信息失败, 原因:{1}".format(novel_name, e))
+        logger.error("(dingdian)解析小说[{0}]信息失败, 原因:{1}".format(novel_name, e))
     return []

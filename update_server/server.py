@@ -13,13 +13,14 @@ from core import get_database_manager, get_logger
 from models import UserFavorite, Novel, Chapter, UserProfile, UserMessage
 import utils, asyncUtils
 import settings
-from parser import biquge
+from parser import biquge, dingdian
 
 objects = get_database_manager()
 logger = get_logger()
 async_semaphore = asyncio.Semaphore(settings.CONCURRENT_REQUESTS)
 novel_parser = {
     "biquge": biquge,
+    "dingdian": dingdian,
 }
 
 ua = UserAgent()
@@ -98,9 +99,9 @@ def fav_update(session, novel):
 
     try:
         chapters = Chapter.select(Chapter.chapter_url).where(Chapter.novel_id == novel.id)
-        filter_urls = set([chapter.chapter_url for chapter in chapters])
         html = parser_obj.get_html(session, novel.url, delay_time=settings.DOWNLOAD_DELAY, headers=headers)
         urls = parser_obj.parse_novel(html, novel.novel_name)
+        filter_urls = set([chapter.chapter_url for chapter in chapters])
         for url in urls:
             url = parse.urljoin(novel.url, url)
             if url in filter_urls:
