@@ -7,7 +7,7 @@ from peewee import fn
 
 from core import get_logger, get_database_manager
 from models import Proxys
-from settings import USE_PROXY
+from settings import USE_PROXY, ERR_PREFIX
 
 logger = get_logger()
 objects = get_database_manager()
@@ -28,8 +28,7 @@ async def async_get_html(url, delay_time=0, headers=None):
             response = await http_client.fetch(url, headers=headers)
         html = response.body.decode("gbk")
     except Exception as e:
-        logger.error("获取url[{0}]内容失败, 原因:{1}".format(url, e))
-        html = None
+        raise RuntimeError("{0}async_get_html({1}) fail, error:{2}".format(ERR_PREFIX, url, e))
     return html
 
 
@@ -46,11 +45,9 @@ def get_html(session, url, delay_time=0, headers=None):
         else:
             response = session.get(url, headers=headers)
         response.encoding = "gbk"
-        html = response.text
     except Exception as e:
-        logger.error("获取url[{0}]内容失败, 原因:{1}".format(url, e))
-        html = None
-    return html
+        raise RuntimeError("{0}get_html({1}) fail, error:{2}".format(ERR_PREFIX, url, e))
+    return response.text
 
 
 def parse_chapter(html, novel_name):
@@ -59,7 +56,7 @@ def parse_chapter(html, novel_name):
         name = selector.css(".bookname h1::text").extract_first().strip()
         return name
     except Exception as e:
-        logger.error("(biquge)解析小说[{0}]章节失败, 原因:{1}".format(novel_name, e))
+        raise RuntimeError("{0}parse_chapter({1}) fail, error:{2}".format(ERR_PREFIX, novel_name, e))
 
 
 def parse_novel(html, novel_name):
@@ -68,5 +65,4 @@ def parse_novel(html, novel_name):
         urls = selector.css("#list dl dd a::attr(href)").extract()
         yield from urls
     except Exception as e:
-        logger.error("(biquge)解析小说[{0}]信息失败, 原因:{1}".format(novel_name, e))
-    return []
+        raise RuntimeError("{0}parse_novel({1}) fail, error:{2}".format(ERR_PREFIX, novel_name, e))

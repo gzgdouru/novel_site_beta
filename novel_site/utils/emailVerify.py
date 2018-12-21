@@ -63,7 +63,6 @@ def send_online_email_code(email, send_type="register"):
         code = generate_digits_code(length=6)
     else:
         code = generate_code(length=64)
-    EmailVerify(email=email, code=code, send_type=send_type).save()
 
     # 发送邮件
     if send_type == "register":
@@ -71,10 +70,10 @@ def send_online_email_code(email, send_type="register"):
         project = "PwalT1"
     elif send_type == "forget":
         subject = "用户密码重置邮件"
-        content = "AIk5G1"
+        project = "AIk5G1"
     elif send_type == "modify":
         subject = "更改用户邮箱邮件"
-        content = "zasOO4"
+        project = "zasOO4"
     else:
         return "无效的send_type:{0}".format(send_type)
 
@@ -85,6 +84,8 @@ def send_online_email_code(email, send_type="register"):
     res = json.loads(response.text)
     if res.get("status") == "error":
         return res.get("msg")
+    else:
+        EmailVerify(email=email, code=code, send_type=send_type).save()
 
 
 if __name__ == "__main__":

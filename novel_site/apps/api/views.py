@@ -1,152 +1,90 @@
-from django.shortcuts import get_object_or_404, redirect
+from django.contrib.auth import get_user_model
+from django.contrib.auth.hashers import make_password
 from django.db.models import Q
-from rest_framework.response import Response
-from rest_framework.views import APIView
 from rest_framework import generics
-from rest_framework import filters
-from rest_framework.reverse import reverse
-import django_filters
+from rest_framework import status
+from rest_framework.response import Response
 
-from novel.models import Novel, NovelCategory, NovelChapter
-from authors.models import Author
-from .serializers import NovelSerializer, CategorySerializer, AuthorSerializer
-from .serializers import ChapterSerializer
-from .filters import NovelFilter, AuthorFilter, CatrgoryFilter
-from utils import chapterParser
+from .serializers import EmailCodeSendSerializer, EmailCodeVerifySerializer
+from .serializers import MobileCodeSendSerializer, MobileVerifySerializer
+from .serializers import PasswdModifySerializer
+from users.models import EmailVerify, MobileVerify
+from .apiUtils import send_email_code, send_mobile_code
 
-
-# Create your views here.
-class IndexView(APIView):
-    def get(self, request):
-        return redirect("/docs/")
+User = get_user_model()
 
 
-class NovelListView(generics.ListAPIView):
-    '''获取小说列表'''
-    queryset = Novel.objects.all()
-    serializer_class = NovelSerializer
-    filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
-    # filter_backends = (django_filters.rest_framework.DjangoFilterBackend, filters.SearchFilter)
-    filterset_class = NovelFilter
-    # filter_fields = ("novel_name", "category", "author__name")
-    # search_fields = ("novel_name", "author__name")
+class EmailCodeSendView(generics.CreateAPIView):
+    '''发送邮箱验证码'''
+    serializer_class = EmailCodeSendSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        email = serializer.validated_data["email"]
+        send_type = serializer.validated_data["send_type"]
+
+        err_msg = send_email_code(email, send_type)
+        if err_msg:
+            return Response({"email": err_msg}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class CategoryAllNovelView(generics.ListAPIView):
-    '''获取分类下的所有小说'''
-    serializer_class = NovelSerializer
+class EmailCodeVerifyView(generics.GenericAPIView):
+    '''验证邮箱验证码'''
+    serializer_class = EmailCodeVerifySerializer
 
-    def get(self, request, *args, **kwargs):
-        self.category_id = kwargs.get("category_id")
-        queryset = self.get_queryset()
-
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
-
-    def get_queryset(self):
-        category = get_object_or_404(NovelCategory, pk=self.category_id)
-        return category.novel_set.all()
+    def post(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data["email"]
+        code = serializer.validated_data["code"]
+        send_type = serializer.validated_data["send_type"]
+        EmailVerify.objects.filter(email=email, code=code, send_type=send_type).update(is_valid=False)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class AuthorAllNovelView(generics.ListAPIView):
-    '''获取作者的所有小说'''
-    serializer_class = NovelSerializer
+class MobileCodeSendView(generics.CreateAPIView):
+    '''发送手机验证码'''
+    serializer_class = MobileCodeSendSerializer
 
-    def get(self, request, *args, **kwargs):
-        self.author_id = kwargs.get("author_id")
-        queryset = self.get_queryset()
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
+        mobile = serializer.validated_data["mobile"]
+        verify_type = serializer.validated_data["verify_type"]
 
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
-
-    def get_queryset(self):
-        author = get_object_or_404(Author, pk=self.author_id)
-        return author.novel_set.all()
-        # return Novel.objects.filter(author=author)
+        err_msg = send_mobile_code(mobile, verify_type)
+        if err_msg:
+            return Response({"mobile": err_msg}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class NovelDetailView(generics.RetrieveAPIView):
-    '''获取特定的小说'''
-    queryset = Novel.objects.all()
-    serializer_class = NovelSerializer
+class MobileVerifyView(generics.GenericAPIView):
+    '''验证手机验证码'''
+    serializer_class = MobileVerifySerializer
+
+    def post(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        mobile = serializer.validated_data["mobile"]
+        code = serializer.validated_data["code"]
+        verify_type = serializer.validated_data["verify_type"]
+        MobileVerify.objects.filter(mobile=mobile, code=code, verify_type=verify_type).update(is_valid=False)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class CategoryListView(generics.ListAPIView):
-    '''获取小说分类列表'''
-    queryset = NovelCategory.objects.all()
-    serializer_class = CategorySerializer
-    filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
-    filterset_class = CatrgoryFilter
-    # filter_fields = ("name",)
+class PasswordModifyView(generics.GenericAPIView):
+    '''密码修改'''
+    serializer_class = PasswdModifySerializer
 
-
-class CategoryDetailView(generics.RetrieveAPIView):
-    '''获取特定的小说分类'''
-    queryset = NovelCategory.objects.all()
-    serializer_class = CategorySerializer
-
-
-class AuthorListView(generics.ListAPIView):
-    '''获取小说作者列表'''
-    queryset = Author.objects.all()
-    serializer_class = AuthorSerializer
-    filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
-    filterset_class = AuthorFilter
-    # filter_fields = ("name",)
-
-
-class AuthorDetailView(generics.RetrieveAPIView):
-    '''获取特定的小说作者'''
-    queryset = Author.objects.all()
-    serializer_class = AuthorSerializer
-
-
-class ChapterListView(generics.ListAPIView):
-    '''获取小说的章节列表'''
-    serializer_class = ChapterSerializer
-
-    def get(self, request, *args, **kwargs):
-        self.novel_id = kwargs.get("novel_id")
-        queryset = self.get_queryset()
-
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
-
-    def get_queryset(self):
-        novel = Novel.objects.filter(pk=self.novel_id).first()
-        chapters = NovelChapter.objects.filter(novel=novel).values("id", "chapter_index", "chapter_name").order_by(
-            "chapter_index")
-        return chapters
-
-
-class ChapterDetailView(generics.RetrieveAPIView):
-    '''获取章节内容'''
-    queryset = NovelChapter.objects.all()
-    serializer_class = ChapterSerializer
-
-    def get(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = self.get_serializer(instance)
-
-        novel = get_object_or_404(Novel, pk=instance.novel_id)
-        get_chapter_content = getattr(chapterParser, novel.spider_name)
-        chapter_content = get_chapter_content(instance.chapter_url)
-
-        re_dict = serializer.data
-        re_dict["chapter_content"] = chapter_content
-        return Response(re_dict)
+    def post(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        username = serializer.validated_data["username"]
+        password = serializer.validated_data["password"]
+        password = make_password(password)
+        User.objects.filter(Q(username=username) | Q(email=username) | Q(mobile=username)).update(password=password)
+        return Response(serializer.data, status=status.HTTP_200_OK)

@@ -212,6 +212,13 @@ ONLINE_EMAIL_URL = r'https://api.mysubmail.com/mail/xsend'
 ONLINE_EMAIL_APPID = "13955"
 ONLINE_EMAIL_APPKEY = "2d21d55a5bdc018fbf7123544264dd9b"
 
+MOBILE_VERIFY_REGX = r'((13[0-9])|(14[5,7])|(15[0-3,5-9])|(17[0,3,5-8])|(18[0-9])|166|198|199|(147))\d{8}$'
+
+# 短信发送设置
+SMS_URL = r'https://api.mysubmail.com/message/xsend'
+SMS_APPID = "27038"
+SMS_APPKEY = "c7ed55eb026edf67c87183a28948872a"
+
 # 自定义变量
 CUSTOM_USER_LOGIN_URL = "/login"
 CUSTOM_NOVEL_FILE_PATH = "f:/novels" if is_beta else "../novels"

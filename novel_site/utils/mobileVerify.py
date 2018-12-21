@@ -57,8 +57,8 @@ def send_mobile_code(mobile, verify_type="register"):
     url = r'https://api.mysubmail.com/message/xsend'
     code = generate_code()
     params = {
-        "code" : code,
-        "time" : 10,
+        "code": code,
+        "time": 10,
     }
 
     data = {
@@ -77,4 +77,4 @@ def send_mobile_code(mobile, verify_type="register"):
 
 
 if __name__ == "__main__":
-   print(generate_code())
+    print(generate_code())

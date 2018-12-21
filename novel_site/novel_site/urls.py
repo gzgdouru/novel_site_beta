@@ -17,13 +17,13 @@ from django.conf.urls import url, include
 from django.contrib import admin
 from django.views.static import serve
 from rest_framework.documentation import include_docs_urls
+from rest_framework_jwt.views import obtain_jwt_token
+import xadmin
 
 from novel.views import IndexView
 from novel_site.settings import MEDIA_ROOT
 from users.views import LoginView, LogoutView, EmailRegisterView, MobileRegisterView, AccountActiveView, \
     EmailForgetView, MobileForgetView, EmailResetView, MoblieVerifyView, RefreshCaptchaView
-
-import xadmin
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
@@ -44,17 +44,22 @@ urlpatterns = [
     url(r'^authors/', include("authors.urls")),
     url(r'^users/', include("users.urls")),
     url(r'^operation/', include("operation.urls")),
-    url(r'^api/v1/', include("api.urls")),
+
+    # api相关路由配置
+    url(r'^api/', include("api.urls")),
     url(r'docs/', include_docs_urls(title="小说api")),
+    url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
 
+    #JWT登录路由
+    url(r'^api-token-auth/', obtain_jwt_token),
 
-    #刷新验证码
+    # 刷新验证码
     url(r'^refresh_captcha/$', RefreshCaptchaView.as_view(), name="refresh_captcha"),
 
-    #第三方登陆
+    # 第三方登陆
     url('', include('social_django.urls', namespace='social')),
 
-    #验证码
+    # 验证码
     url(r'^captcha/', include('captcha.urls')),
 
     # 配置上传文件的访问处理函数

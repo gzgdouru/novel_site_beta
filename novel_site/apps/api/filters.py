@@ -1,6 +1,6 @@
 import django_filters
 
-from novel.models import Novel, NovelCategory
+from novel.models import Novel, NovelCategory, NovelChapter
 from authors.models import Author
 
 
@@ -32,3 +32,11 @@ class CatrgoryFilter(django_filters.rest_framework.FilterSet):
     class Meta:
         model = NovelCategory
         fields = ("name",)
+
+
+class ChapterFilter(django_filters.rest_framework.FilterSet):
+    novel_id = django_filters.rest_framework.NumberFilter(field_name="novel_id", help_text="小说id")
+
+    class Meta:
+        model = NovelChapter
+        fields = ("novel_id",)

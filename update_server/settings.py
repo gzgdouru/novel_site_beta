@@ -20,6 +20,7 @@ NOVEL_UPDATE_INTERVAL = 1 * 60 * 60  # 小说更新时间间隔
 DOWNLOAD_DELAY = 2  # 延迟时间
 CONCURRENT_REQUESTS = 8  # 并发数
 USE_PROXY = False #是否使用ip代理
+ERR_PREFIX = "\n--->"
 
 # 邮件设置
 EMAIL_HOST = "smtp.163.com"
@@ -37,3 +38,5 @@ SMS_APPKEY = "c7ed55eb026edf67c87183a28948872a"
 ONLINE_EMAIL_URL = r'https://api.mysubmail.com/mail/xsend'
 ONLINE_EMAIL_APPID = "13955"
 ONLINE_EMAIL_APPKEY = "2d21d55a5bdc018fbf7123544264dd9b"
+
+

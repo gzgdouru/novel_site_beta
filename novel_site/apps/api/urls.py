@@ -1,23 +1,24 @@
-from django.conf.urls import url
+from django.conf.urls import url, include
+from rest_framework.routers import DefaultRouter
 
-from . import views
+from . import views, viewsets
 
-app_name = "api_v1"
+app_name = "api"
+router = DefaultRouter()
+router.register("novel", viewsets.NovelViewset, base_name="novel")
+router.register("category", viewsets.CategoryViewset, base_name="category")
+router.register("author", viewsets.AuthorViewset, base_name="author")
+router.register("chapter", viewsets.ChapterViewset, base_name="chapter")
+router.register("user", viewsets.UserViewset, base_name="user")
+router.register("favorite", viewsets.UserFavViewset, base_name="favorite")
+router.register("message", viewsets.UserMessageViewset, base_name="message")
+router.register("suggest", viewsets.UserSuggestViewset, base_name="suggest")
 
 urlpatterns = [
-    url(r'^$', views.IndexView.as_view(), name="index"),
-    url(r'^novel/$', views.NovelListView.as_view(), name="novel_list"),
-    url(r'^novel/(?P<pk>\d+)/$', views.NovelDetailView.as_view(), name="novel_detail"),
-
-    url(r'^category/(?P<category_id>\d+)/novel/$', views.CategoryAllNovelView.as_view(), name="category_all_novel"),
-    url(r'^author/(?P<author_id>\d+)/novel/$', views.AuthorAllNovelView.as_view(), name="author_all_novel"),
-
-    url(r'^category/$', views.CategoryListView.as_view(), name="category_list"),
-    url(r'^category/(?P<pk>\d+)/$', views.CategoryDetailView.as_view(), name="category_detail"),
-
-    url(r'^author/$', views.AuthorListView.as_view(), name="author_list"),
-    url(r'^author/(?P<pk>\d+)/$', views.AuthorDetailView.as_view(), name="author_detail"),
-
-    url(r'^chapter/(?P<novel_id>\d+)/$', views.ChapterListView.as_view(), name="chapter_list"),
-    url(r'^chapter/(?P<pk>\d+)/$', views.ChapterDetailView.as_view(), name="chapter_detail"),
+    url(r'', include(router.urls)),
+    url(r'^email-send/$', views.EmailCodeSendView.as_view(), name="email-send"),
+    url(r'^email-verify/$', views.EmailCodeVerifyView.as_view(), name="email-verify"),
+    url(r'^mobile-send/$', views.MobileCodeSendView.as_view(), name="mobile-send"),
+    url(r'^mobile-verify/$', views.MobileVerifyView.as_view(), name="mobile-verify"),
+    url(r'^password-modify/$', views.PasswordModifyView.as_view(), name="password-modify"),
 ]
