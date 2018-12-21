@@ -9,7 +9,7 @@ from .serializers import EmailCodeSendSerializer, EmailCodeVerifySerializer
 from .serializers import MobileCodeSendSerializer, MobileVerifySerializer
 from .serializers import PasswdModifySerializer
 from users.models import EmailVerify, MobileVerify
-from .apiUtils import send_email_code, send_mobile_code
+from utils.api import send_email_code, send_mobile_code
 
 User = get_user_model()
 

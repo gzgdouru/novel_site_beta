@@ -8,7 +8,7 @@ from rest_framework import mixins
 from rest_framework.authentication import SessionAuthentication
 from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 from rest_framework.permissions import IsAuthenticated
-from rest_framework import status
+from rest_framework.filters import OrderingFilter
 
 from novel.models import Novel, NovelCategory, NovelChapter
 from authors.models import Author
@@ -32,8 +32,9 @@ class NovelViewset(GenericViewSet, mixins.ListModelMixin, mixins.RetrieveModelMi
     '''
     queryset = Novel.objects.all()
     serializer_class = NovelSerializer
-    filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
+    filter_backends = (django_filters.rest_framework.DjangoFilterBackend, OrderingFilter)
     filterset_class = NovelFilter
+    ordering_fields = ("read_nums", "fav_nums")
 
 
 class CategoryViewset(GenericViewSet, mixins.ListModelMixin, mixins.RetrieveModelMixin):

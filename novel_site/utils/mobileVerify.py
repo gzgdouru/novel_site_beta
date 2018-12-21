@@ -5,13 +5,13 @@ from django.db import transaction
 import requests
 
 from users.models import MobileVerify
+from novel_site import settings
 
 User = get_user_model()
 
 
 def phone_nums_verify(mobile):
-    REGX = r"^((13[0-9])|(14[5,7])|(15[0-3,5-9])|(17[0,3,5-8])|(18[0-9])|166|198|199|(147))\d{8}$"
-    matcher = re.match(REGX, mobile)
+    matcher = re.match(settings.MOBILE_VERIFY_REGX, mobile)
     return matcher
 
 
@@ -54,7 +54,6 @@ def generate_code(length=6):
 
 
 def send_mobile_code(mobile, verify_type="register"):
-    url = r'https://api.mysubmail.com/message/xsend'
     code = generate_code()
     params = {
         "code": code,
@@ -62,14 +61,14 @@ def send_mobile_code(mobile, verify_type="register"):
     }
 
     data = {
-        "appid": "27038",
+        "appid": settings.SMS_APPID,
         "to": mobile,
         "project": "Qtnph1",
         "vars": json.dumps(params),
-        "signature": "c7ed55eb026edf67c87183a28948872a",
+        "signature": settings.SMS_APPKEY,
     }
 
-    response = requests.post(url, data=data)
+    response = requests.post(settings.SMS_URL, data=data)
     res = json.loads(response.text)
     if res.get("status") == "error":
         raise RuntimeError("send sms error:{0}".format(res.get("msg")))

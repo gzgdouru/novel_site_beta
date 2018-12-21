@@ -47,7 +47,7 @@ urlpatterns = [
 
     # api相关路由配置
     url(r'^api/', include("api.urls")),
-    url(r'docs/', include_docs_urls(title="小说api")),
+    url(r'^docs/', include_docs_urls(title="小说api")),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
 
     #JWT登录路由

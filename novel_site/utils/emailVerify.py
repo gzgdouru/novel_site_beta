@@ -51,7 +51,6 @@ def send_email_code(email, send_type="register"):
 
 
 def send_online_email_code(email, send_type="register"):
-    url = settings.ONLINE_EMAIL_URL
     data = {
         "appid": settings.ONLINE_EMAIL_APPID,
         "to": email,
@@ -80,7 +79,7 @@ def send_online_email_code(email, send_type="register"):
     data["subject"] = subject
     data["project"] = project
     data["vars"] = json.dumps({"code": code})
-    response = requests.post(url, data=data)
+    response = requests.post(settings.ONLINE_EMAIL_URL, data=data)
     res = json.loads(response.text)
     if res.get("status") == "error":
         return res.get("msg")
