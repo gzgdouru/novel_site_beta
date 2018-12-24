@@ -16,8 +16,8 @@ LOG_LEVEL = "DEBUG"
 LOG_FORMATTER = "[%(asctime)s] [%(name)s] [%(levelname)s] : %(message)s"
 
 FAV_UPDATE_INTERVAL = 30 * 60  # 用户收藏小说更新间隔
-NOVEL_UPDATE_INTERVAL = 1 * 60 * 60  # 小说更新时间间隔
-DOWNLOAD_DELAY = 2  # 延迟时间
+NOVEL_UPDATE_INTERVAL = 3 * 60 * 60  # 小说更新时间间隔
+DOWNLOAD_DELAY = 3  # 延迟时间
 CONCURRENT_REQUESTS = 8  # 并发数
 USE_PROXY = False  # 是否使用ip代理
 ERR_PREFIX = "\n--->" #错误日志前缀

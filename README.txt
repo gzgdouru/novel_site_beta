@@ -1,0 +1,4 @@
+novel_site		小说web模块
+novel_spider	小说爬虫模块
+update_server	小说更新模块
+distributed_update_server	可部署在多台服务器上的小说更新模块
