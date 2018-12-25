@@ -41,24 +41,24 @@ async def update_notice(novel):
             await send_update_sms(user.mobile, novel.novel_name)
         else:
             try:
-                message = "您收藏的小说({0})已经有更新了, 请前往阅读.".format(novel.novel_name)
-                objects.create(UserMessage, message=message, user_id=user.id)
-                logger.info("发送小说[{0}]更新消息给用户[{1}]成功".format(novel.novel_name, user.username))
+                message = "您收藏的小说【{0}】已经有更新了, 请前往阅读.".format(novel.novel_name)
+                await objects.create(UserMessage, message=message, user_id=user.id)
+                logger.info("发送小说【{0}】更新消息给用户【{1}】成功".format(novel.novel_name, user.username))
             except Exception as e:
-                logger.error("发送小说[{0}]更新消息给用户[{1}]失败, 原因:{2}".format(novel.novel_name, user.username, e))
+                logger.error("发送小说【{0}】更新消息给用户【{1}】失败, 原因:{2}".format(novel.novel_name, user.username, e))
 
 
 async def novel_update(novel):
     async with async_semaphore:
         send_notice = False
-        logger.info("更新小说[{0}]开始...".format(novel.novel_name))
+        logger.info("更新小说【{0}】开始...".format(novel.novel_name))
         start_time = time.time()
 
         try:
             parser_obj = novel_parser[novel.spider_name]
         except KeyError as e:
             logger.error("不存在的解析器:{0}".format(novel.spider_name))
-            logger.info("更新小说[{0}]结束, 耗时:{1}".format(novel.novel_name, time.time() - start_time))
+            logger.info("更新小说【{0}】结束, 耗时:{1}".format(novel.novel_name, time.time() - start_time))
             return
 
         try:
@@ -76,31 +76,32 @@ async def novel_update(novel):
                     chapter_name = parser_obj.parse_chapter(html)
                 except Exception as e:
                     logger.error(f"解析小说【{novel.novel_name}】章节【{url}】失败, 原因:{e}")
+                    continue
 
                 chapter_index = get_index_by_chapter(url)
 
                 try:
                     await objects.create(Chapter, chapter_url=url, chapter_name=chapter_name,
                                          chapter_index=chapter_index, novel_id=novel.id)
-                    logger.info("保存[{0}:{1}]到数据库成功.".format(novel.novel_name, chapter_name))
+                    logger.info("保存【{0}:{1}】到数据库成功.".format(novel.novel_name, chapter_name))
                 except Exception as e:
                     logger.error("保存[{0}:{1}:{2}]到数据库失败, 原因:{3}".format(novel.novel_name, chapter_index, url, e))
         except Exception as e:
-            logger.error("更新小说[{0}]失败, 原因:{1}".format(novel.novel_name, e))
-        logger.info("更新小说[{0}]结束, 耗时:{1}".format(novel.novel_name, time.time() - start_time))
+            logger.error("更新小说【{0}】失败, 原因:{1}".format(novel.novel_name, e))
+        logger.info("更新小说【{0}】结束, 耗时:{1}".format(novel.novel_name, time.time() - start_time))
 
 
 async def fav_update(novel):
     async with async_semaphore:
         send_notice = False
-        logger.info("更新用户收藏小说[{0}]开始...".format(novel.novel_name))
+        logger.info("更新用户收藏小说【{0}】开始...".format(novel.novel_name))
         start_time = time.time()
 
         try:
             parser_obj = novel_parser[novel.spider_name]
         except KeyError as e:
             logger.error("不存在的解析器:{0}".format(novel.spider_name))
-            logger.info("更新用户收藏小说[{0}]结束, 耗时:{1}".format(novel.novel_name, time.time() - start_time))
+            logger.info("更新用户收藏小说【{0}】结束, 耗时:{1}".format(novel.novel_name, time.time() - start_time))
             return
 
         try:
@@ -123,23 +124,23 @@ async def fav_update(novel):
                 chapter_index = get_index_by_chapter(url)
 
                 try:
-                    objects.create(Chapter, chapter_url=url, chapter_name=chapter_name, chapter_index=chapter_index,
+                    await objects.create(Chapter, chapter_url=url, chapter_name=chapter_name, chapter_index=chapter_index,
                                    novel_id=novel.id)
-                    logger.info("保存[{0}:{1}]到数据库成功.".format(novel.novel_name, chapter_name))
+                    logger.info("保存【{0}:{1}】到数据库成功.".format(novel.novel_name, chapter_name))
                     send_notice = True
                 except Exception as e:
-                    logger.error("保存[{0}:{1}:{2}]到数据库失败, 原因:{3}".format(novel.novel_name, chapter_index, url, e))
+                    logger.error("保存【{0}:{1}】到数据库失败, 原因:{2}".format(novel.novel_name, url, e))
         except Exception as e:
-            logger.error("更新用户收藏小说[{0}]失败, 原因:{1}".format(novel.novel_name, e))
-        logger.info("更新用户收藏小说[{0}]结束, 耗时:{1}".format(novel.novel_name, time.time() - start_time))
+            logger.error("更新用户收藏小说【{0}】失败, 原因:{1}".format(novel.novel_name, e))
+        logger.info("更新用户收藏小说【{0}】结束, 耗时:{1}".format(novel.novel_name, time.time() - start_time))
 
         try:
             if send_notice:
-                update_notice(novel)
+                await update_notice(novel)
             else:
-                logger.info("小说[{0}]无更新.".format(novel.novel_name))
+                logger.info("小说【{0}】无更新.".format(novel.novel_name))
         except Exception as e:
-            logger.error("发送小说[{0}]更新同时失败, 原因:{1}".format(novel.novel_name, e))
+            logger.error("发送小说【{0}】更新同时失败, 原因:{1}".format(novel.novel_name, e))
 
 
 async def novel_update_main(redis_pool):
