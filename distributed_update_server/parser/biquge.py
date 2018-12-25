@@ -50,13 +50,13 @@ def get_html(session, url, delay_time=0, headers=None):
     return response.text
 
 
-def parse_chapter(html, novel_name):
+def parse_chapter(html):
     try:
         selector = Selector(text=html)
         name = selector.css(".bookname h1::text").extract_first().strip()
         return name
     except Exception as e:
-        raise RuntimeError("{0}parse_chapter({1}) fail, error:{2}".format(ERR_PREFIX, novel_name, e))
+        raise RuntimeError("{0}parse_chapter() fail, error:{1}".format(ERR_PREFIX, e))
 
 
 def parse_novel(html, novel_name):
@@ -65,4 +65,4 @@ def parse_novel(html, novel_name):
         urls = selector.css("#list dl dd a::attr(href)").extract()
         yield from urls
     except Exception as e:
-        raise RuntimeError("{0}parse_novel({1}) fail, error:{2}".format(ERR_PREFIX, novel_name, e))
+        raise RuntimeError("{0}parse_novel() fail, error:{1}".format(ERR_PREFIX, e))

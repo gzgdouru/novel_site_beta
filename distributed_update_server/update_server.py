@@ -100,15 +100,22 @@ async def fav_update(novel):
         try:
             chapters = await objects.execute(Chapter.select(Chapter.chapter_url).where(Chapter.novel_id == novel.id))
             html = await parser_obj.async_get_html(novel.url, delay_time=settings.DOWNLOAD_DELAY, headers=headers)
-            urls = parser_obj.parse_novel(html, novel.novel_name)
+            urls = parser_obj.parse_novel(html)
             filter_urls = set([chapter.chapter_url for chapter in chapters])
             for url in urls:
                 url = parse.urljoin(novel.url, url)
                 if url in filter_urls:
                     continue
-                html = await parser_obj.async_get_html(url, delay_time=settings.DOWNLOAD_DELAY, headers=headers)
-                chapter_name = parser_obj.parse_chapter(html, novel.novel_name)
+
+                try:
+                    html = await parser_obj.async_get_html(url, delay_time=settings.DOWNLOAD_DELAY, headers=headers)
+                    chapter_name = parser_obj.parse_chapter(html)
+                except Exception as e:
+                    logger.error(f"解析小说[{novel.novel_name}]章节url[{url}]失败, 原因:{e}")
+                    continue
+
                 chapter_index = get_index_by_chapter(url)
+
                 try:
                     objects.create(Chapter, chapter_url=url, chapter_name=chapter_name, chapter_index=chapter_index,
                                    novel_id=novel.id)
