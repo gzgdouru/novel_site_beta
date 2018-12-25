@@ -59,7 +59,7 @@ def parse_chapter(html):
         raise RuntimeError("{0}parse_chapter() fail, error:{1}".format(ERR_PREFIX, e))
 
 
-def parse_novel(html, novel_name):
+def parse_novel(html):
     try:
         selector = Selector(text=html)
         urls = selector.css("#list dl dd a::attr(href)").extract()
