@@ -19,7 +19,7 @@ _sHandle = logging.StreamHandler()
 _sHandle.setLevel(getattr(logging, settings.LOG_LEVEL))
 _sHandle.setFormatter(logging.Formatter(settings.LOG_FORMATTER))
 _logger.addHandler(_sHandle)
-if settings.LOG_FILE:
+if hasattr(settings, "LOG_FILE"):
     fHandle = logging.FileHandler(settings.LOG_FILE)
     fHandle.setLevel(getattr(logging, settings.LOG_LEVEL))
     fHandle.setFormatter(logging.Formatter(settings.LOG_FORMATTER))
